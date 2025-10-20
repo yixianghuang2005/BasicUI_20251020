@@ -1,7 +1,6 @@
 package tw.edu.pu.csim.tcyang.basicui
 
 
-import android.R.id.message
 import android.media.MediaPlayer
 import android.os.Bundle
 import android.widget.Toast
@@ -10,6 +9,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable // 引入 clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -19,7 +19,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
@@ -41,7 +40,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import tw.edu.pu.csim.tcyang.basicui.ui.theme.BasicUITheme
@@ -65,8 +63,8 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun Main(modifier: Modifier = Modifier) {
 
-    var Animals = listOf(R.drawable.animal0, R.drawable.animal1,
-        R.drawable.animal2, R.drawable.animal3,
+    var Animals = listOf(R.drawable.animal0, R.drawable.animal1, // animal1 是企鵝
+        R.drawable.animal2, R.drawable.animal3, // animal2 是青蛙
         R.drawable.animal4, R.drawable.animal5,
         R.drawable.animal6, R.drawable.animal7,
         R.drawable.animal8, R.drawable.animal9)
@@ -74,30 +72,32 @@ fun Main(modifier: Modifier = Modifier) {
     var AnimalsName = arrayListOf("鴨子","企鵝",
         "青蛙","貓頭鷹","海豚", "牛", "無尾熊", "獅子", "狐狸", "小雞")
 
-    var flag  by remember{ mutableStateOf("test")} //設成remember變數 用mutableStateOf可變化
+    var flag  by remember{ mutableStateOf("test")}
 
     val context = LocalContext.current
 
     var mper: MediaPlayer? by remember { mutableStateOf(null) }
 
+
+
+    // ⭐ 新增：用於控制最下方圖片的狀態
+    var bottomAnimalImageResId by remember { mutableStateOf(R.drawable.animal1) } // 初始為企鵝
+
     // 使用 DisposableEffect 來管理 MediaPlayer 的生命週期
-    // 當 Main Composable 離開組合時，會執行 onDispose 區塊
-    DisposableEffect(Unit) { // Unit 作為 key 表示這個 effect 只會執行一次
+    DisposableEffect(Unit) {
         onDispose {
-            // 釋放 MediaPlayer 資源，避免記憶體洩漏
             mper?.release()
             mper = null
-
         }
     }
 
 
     Column (
         modifier = modifier
-            .fillMaxSize() // 1. 設定全螢幕（填滿父容器）
-            .background(Color(0xFFE0BBE4)), // 4. 設定背景為淺紫色
-        horizontalAlignment = Alignment.CenterHorizontally, // 2. 設定水平置中
-        verticalArrangement = Arrangement.Top // 3. 設定垂直靠上
+            .fillMaxSize()
+            .background(Color(0xFFE0BBE4)),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Top
     ) {
         Text(text = stringResource(R.string.app_title),
             fontSize = 25.sp,
@@ -124,7 +124,7 @@ fun Main(modifier: Modifier = Modifier) {
                     .clip(CircleShape)
                     .background(Color.Yellow),
                 alpha = 0.6f,
-                )
+            )
 
             Image(
                 painter = painterResource(id = R.drawable.compose),
@@ -154,13 +154,9 @@ fun Main(modifier: Modifier = Modifier) {
                 )
 
             }
-
-
-
         }
 
         Spacer(modifier = Modifier.size(10.dp))
-
 
 
         Button(
@@ -192,16 +188,16 @@ fun Main(modifier: Modifier = Modifier) {
                 mper = null // 清除舊引用
                 mper = MediaPlayer.create(context, R.raw.tcyang) //設定音樂
                 mper?.start()    //開始播放
-                } ,
+            } ,
                 modifier = Modifier
                     .fillMaxWidth(0.33f)
                     .fillMaxHeight(0.8f),
 
                 colors = buttonColors(Color.Green)
-               ) {
+            ) {
                 Text(text = "歡迎", color = Color.Blue)
                 Text(text = "修課", color = Color.Red)
-                Image(            painterResource(id = R.drawable.teacher),
+                Image(painterResource(id = R.drawable.teacher),
                     contentDescription ="teacher icon")
             }
 
@@ -230,9 +226,30 @@ fun Main(modifier: Modifier = Modifier) {
             }) {
                 Text(text = "結束App")
             }
+
+            Spacer(modifier = Modifier.size(10.dp))
+
+
+
         }
 
-
+        // ⭐ 最下方新增的圖片元件，初始為企鵝，點擊可切換為青蛙
+        Spacer(modifier = Modifier.size(20.dp)) // 增加一些間距
+        Image(
+            painter = painterResource(id = bottomAnimalImageResId),
+            contentDescription = "可點擊切換的動物圖片",
+            modifier = Modifier
+                .size(120.dp) // 設定圖片大小
+                .clickable { // ⭐ 讓圖片可以被點擊
+                    // 點擊時，在企鵝和青蛙之間切換
+                    bottomAnimalImageResId = if (bottomAnimalImageResId == R.drawable.animal1) {
+                        R.drawable.animal2 // 切換到青蛙
+                    } else {
+                        R.drawable.animal1 // 切換回企鵝
+                    }
+                }
+        )
 
     }
 }
+
