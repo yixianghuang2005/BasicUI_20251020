@@ -85,6 +85,8 @@ fun Main(modifier: Modifier = Modifier) {
     DisposableEffect(Unit) { // Unit 作為 key 表示這個 effect 只會執行一次
         onDispose {
             // 釋放 MediaPlayer 資源，避免記憶體洩漏
+            mper?.release()
+            mper = null
 
         }
     }
